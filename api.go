@@ -19,7 +19,13 @@ import (
 // Raw lets you call any method of Bot API manually.
 // It also handles API errors, so you only need to unwrap
 // result field from json data.
-func (b *Bot) Raw(method string, payload interface{}) ([]byte, error) {
+func (b *Bot) Raw(method string, payload interface{}, opts ...RequestOption) ([]byte, error) {
+	options := &requestOptions{
+		client: b.client,
+	}
+	for _, opt := range opts {
+		opt(options)
+	}
 	url := b.URL + "/bot" + b.Token + "/" + method
 
 	var buf bytes.Buffer
@@ -51,7 +57,7 @@ func (b *Bot) Raw(method string, payload interface{}) ([]byte, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := b.client.Do(req)
+	resp, err := options.client.Do(req)
 	if err != nil {
 		return nil, wrapError(err)
 	}

@@ -860,12 +860,12 @@ func (b *Bot) AnswerWebApp(query *Query, r Result) (*WebAppMessage, error) {
 //
 // Usually, Telegram-provided File objects miss FilePath so you might need to
 // perform an additional request to fetch them.
-func (b *Bot) FileByID(fileID string) (File, error) {
+func (b *Bot) FileByID(fileID string, opts ...RequestOption) (File, error) {
 	params := map[string]string{
 		"file_id": fileID,
 	}
 
-	data, err := b.Raw("getFile", params)
+	data, err := b.Raw("getFile", params, opts...)
 	if err != nil {
 		return File{}, err
 	}
@@ -904,8 +904,15 @@ func (b *Bot) Download(file *File, localFilename string) error {
 }
 
 // File gets a file from Telegram servers.
-func (b *Bot) File(file *File) (io.ReadCloser, error) {
-	f, err := b.FileByID(file.FileID)
+func (b *Bot) File(file *File, opts ...RequestOption) (io.ReadCloser, error) {
+	options := &requestOptions{
+		client: b.client, // Use bot's default client
+	}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	f, err := b.FileByID(file.FileID, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -918,7 +925,7 @@ func (b *Bot) File(file *File) (io.ReadCloser, error) {
 		return nil, wrapError(err)
 	}
 
-	resp, err := b.client.Do(req)
+	resp, err := options.client.Do(req)
 	if err != nil {
 		return nil, wrapError(err)
 	}
