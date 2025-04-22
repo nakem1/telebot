@@ -22,11 +22,12 @@ import (
 func (b *Bot) Raw(method string, payload interface{}, opts ...RequestOption) ([]byte, error) {
 	options := &requestOptions{
 		client: b.client,
+		url:    b.URL,
 	}
 	for _, opt := range opts {
 		opt(options)
 	}
-	url := b.URL + "/bot" + b.Token + "/" + method
+	url := options.url + "/bot" + b.Token + "/" + method
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(payload); err != nil {
@@ -122,7 +123,7 @@ func (b *Bot) sendFiles(method string, files map[string]File, params map[string]
 		}
 	}()
 
-	url := b.URL + "/bot" + b.Token + "/" + method
+	url := b.URL + "/bot" + b.Token + "/" + method // TODO: use options.url
 
 	resp, err := b.client.Post(url, writer.FormDataContentType(), pipeReader)
 	if err != nil {
