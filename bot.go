@@ -913,9 +913,13 @@ func (b *Bot) File(file *File, opts ...RequestOption) (io.ReadCloser, error) {
 		opt(options)
 	}
 
+	startTime := time.Now()
 	f, err := b.FileByID(file.FileID, opts...)
 	if err != nil {
 		return nil, err
+	}
+	if options.toBotApiLatency != nil {
+		options.toBotApiLatency.Observe(time.Since(startTime).Seconds())
 	}
 
 	url := options.url + "/file/bot" + b.Token + "/" + f.FilePath
@@ -926,9 +930,13 @@ func (b *Bot) File(file *File, opts ...RequestOption) (io.ReadCloser, error) {
 		return nil, wrapError(err)
 	}
 
+	startTime = time.Now()
 	resp, err := options.client.Do(req)
 	if err != nil {
 		return nil, wrapError(err)
+	}
+	if options.fromBotApiLatency != nil {
+		options.fromBotApiLatency.Observe(time.Since(startTime).Seconds())
 	}
 
 	if resp.StatusCode != http.StatusOK {
