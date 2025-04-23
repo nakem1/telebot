@@ -1,6 +1,7 @@
 package telebot
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -908,6 +909,7 @@ func (b *Bot) File(file *File, opts ...RequestOption) (io.ReadCloser, error) {
 	options := &requestOptions{
 		client: b.client, // Use bot's default client
 		url:    b.URL,
+		ctx:    context.Background(),
 	}
 	for _, opt := range opts {
 		opt(options)
@@ -925,7 +927,7 @@ func (b *Bot) File(file *File, opts ...RequestOption) (io.ReadCloser, error) {
 	url := options.url + "/file/bot" + b.Token + "/" + f.FilePath
 	file.FilePath = f.FilePath // saving file path
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(options.ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, wrapError(err)
 	}

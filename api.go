@@ -23,6 +23,7 @@ func (b *Bot) Raw(method string, payload interface{}, opts ...RequestOption) ([]
 	options := &requestOptions{
 		client: b.client,
 		url:    b.URL,
+		ctx:    context.Background(),
 	}
 	for _, opt := range opts {
 		opt(options)
@@ -37,7 +38,7 @@ func (b *Bot) Raw(method string, payload interface{}, opts ...RequestOption) ([]
 	// Cancel the request immediately without waiting for the timeout
 	// when bot is about to stop.
 	// This may become important if doing long polling with long timeout.
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(options.ctx)
 	defer cancel()
 
 	go func() {

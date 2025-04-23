@@ -1,6 +1,7 @@
 package telebot
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,6 +16,7 @@ type requestOptions struct {
 
 	toBotApiLatency   prometheus.Observer
 	fromBotApiLatency prometheus.Observer
+	ctx               context.Context
 }
 
 // WithCustomHTTPClient allows to use custom HTTP client for requests
@@ -34,5 +36,11 @@ func WithFileLatencyMetric(toBotApiLatency prometheus.Observer, fromBotApiLatenc
 	return func(opts *requestOptions) {
 		opts.toBotApiLatency = toBotApiLatency
 		opts.fromBotApiLatency = fromBotApiLatency
+	}
+}
+
+func WithContext(ctx context.Context) RequestOption {
+	return func(opts *requestOptions) {
+		opts.ctx = ctx
 	}
 }
